@@ -100,7 +100,7 @@ public class TunnelClient
             {
                 try
                 {
-                    fastTunnelServer.ForwardList.TryRemove(item.SSHConfig.RemotePort, out _);
+                    fastTunnelServer.RemoveForward(item.SSHConfig.RemotePort);
                     item.Listener.Stop();
                 }
                 catch { }

@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Yarp.ReverseProxy.Forwarder;
+using static FastTunnel.Core.Config.DefaultServerConfig;
 
 namespace FastTunnel.Core.Extensions;
 
@@ -56,14 +57,17 @@ public static class ServicesExtensions
         app.Use(swapHandler.Handle);
     }
 
-    public static void MapFastTunnelServer(this IEndpointRouteBuilder endpoints)
+    public static void MapFastTunnelServer(this IEndpointRouteBuilder endpoints,string webDomain)
     {
+        if (string.IsNullOrWhiteSpace(webDomain))
+        {
+            return;
+        }
         endpoints.MapReverseProxy();
         endpoints.MapFallback(context =>
         {
-            var options = context.RequestServices.GetRequiredService<IOptionsMonitor<DefaultServerConfig>>();
             var host = context.Request.Host.Host;
-            if (!host.EndsWith(options.CurrentValue.WebDomain) || host.Equals(options.CurrentValue.WebDomain))
+            if (!host.EndsWith(webDomain) || host.Equals(webDomain))
             {
                 context.Response.StatusCode = 404;
                 return Task.CompletedTask;

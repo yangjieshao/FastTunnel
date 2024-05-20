@@ -13,7 +13,6 @@
   <ItemGroup>
     <Compile Include="..\FastTunnel.Core\Extensions\ObjectExtensions.cs" Link="Extensions\ObjectExtensions.cs" />
     <Compile Include="..\FastTunnel.Core\Exceptions\SocketClosedException.cs" Link="Exceptions\SocketClosedException.cs" />
-    <Compile Include="..\FastTunnel.Core\Extensions\LoggerExtentions.cs" Link="Extensions\LoggerExtentions.cs" />
     <Compile Include="..\FastTunnel.Core\Extensions\WebSocketExtensions.cs" Link="Extensions\WebSocketExtensions.cs" />
     <Compile Include="..\FastTunnel.Core\FastTunnelConst.cs" Link="FastTunnelConst.cs" />
     <Compile Include="..\FastTunnel.Core\Models\ForwardConfig.cs" Link="Models\ForwardConfig.cs" />

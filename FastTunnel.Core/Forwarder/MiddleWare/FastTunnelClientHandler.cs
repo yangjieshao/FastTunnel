@@ -60,7 +60,9 @@ namespace FastTunnel.Core.Forwarder.MiddleWare
             }
             catch (Exception ex)
             {
-                logger.LogError(ex);
+#pragma warning disable CA2254 // 模板应为静态表达式
+                logger.LogError(ex, ex.Message);
+#pragma warning restore CA2254 // 模板应为静态表达式
             }
         }
 

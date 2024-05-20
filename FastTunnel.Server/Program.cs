@@ -5,14 +5,10 @@
 // Copyright (c) 2019 Gui.H
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using FastTunnel.Api.Filters;
+using FastTunnel.Api.Helper;
 using FastTunnel.Core.Config;
 using FastTunnel.Core.Extensions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using Serilog.Events;
 
 namespace FastTunnel.Server;
 
@@ -21,12 +17,7 @@ public class Program
     [RequiresUnreferencedCode("")]
     public static void Main(string[] args)
     {
-        Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console().WriteTo.File("Logs/log-.log", rollingInterval: RollingInterval.Day)
-                .CreateBootstrapLogger();
-
+        Microsoft.Extensions.Logging.ILogger logger = null;
         try
         {
             var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
@@ -35,21 +26,20 @@ public class Program
             });
 
             // Add services to the container.
-            builder.Services.AddSingleton<CustomExceptionFilterAttribute>();
-            builder.Services.AddControllers();
+            builder.Services.AddSingleton<CustomExceptionFilterAttribute>()
+                            .UseAkavache()
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            //#if DEBUG
-            //            builder.Services.AddSwaggerGen();
-            //#endif
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("corsPolicy", policy =>
-                {
-                    policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()
-                        .WithExposedHeaders("Set-Token");
-                });
-            });
+                            .AddEndpointsApiExplorer()
+                            .AddSwaggerGen()
+                            .AddCors(options =>
+                            {
+                                options.AddPolicy("corsPolicy", policy =>
+                                {
+                                    policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()
+                                        .WithExposedHeaders("Set-Token");
+                                });
+                            })
+                            .AddControllers();
 
             builder.Host.UseSerilog((context, services, configuration) => configuration
                     .ReadFrom.Configuration(context.Configuration)
@@ -67,53 +57,17 @@ public class Program
             var Configuration = builder.Configuration;
             var apioptions = Configuration.GetSection("FastTunnel").Get<DefaultServerConfig>();
 
-            if (apioptions?.Api?.JWT?.ClockSkew > 0
-                && !string.IsNullOrWhiteSpace(apioptions?.Api?.JWT?.IssuerSigningKey))
-            {
-                builder.Services.AddAuthentication("Bearer").AddJwtBearer(delegate (JwtBearerOptions options)
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ClockSkew = TimeSpan.FromSeconds(apioptions.Api.JWT.ClockSkew),
-                        ValidateIssuerSigningKey = true,
-                        ValidAudience = apioptions.Api.JWT.ValidAudience,
-                        ValidIssuer = apioptions.Api.JWT.ValidIssuer,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apioptions.Api.JWT.IssuerSigningKey))
-                    };
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnChallenge = async delegate (JwtBearerChallengeContext context)
-                        {
-                            context.HandleResponse();
-                            context.Response.ContentType = "application/json;charset=utf-8";
-                            await context.Response.WriteAsJsonAsync(new
-                            {
-                                code = -1,
-                                message = context.Error ?? "未登录"
-                            });
-                        }
-                    };
-                });
-            }
-
-            builder.Host.UseWindowsService();
+            //builder.Host.UseWindowsService();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                //#if DEBUG
-                //                app.UseSwagger();
-                //                app.UseSwaggerUI();
-                //#endif
-            }
+            logger = app.Logger;
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseCors("corsPolicy");
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseStaticFiles();
             app.UseAuthentication();
@@ -126,14 +80,16 @@ public class Program
             app.UseFastTunnelServer();
             // -------------------FastTunnel STEP2 END-------------------
 
-            app.MapFastTunnelServer();
+            app.MapFastTunnelServer(apioptions.WebDomain);
 
             app.Run();
         }
         catch (System.Exception ex)
         {
-            Log.Fatal(ex, "致命异常");
+            logger?.LogError(ex, "致命异常");
+            Task.Delay(200).Wait();
             throw;
         }
+        CacheHelper.StopAkavache();
     }
 }

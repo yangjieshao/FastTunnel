@@ -12,11 +12,11 @@
     "FastTunnel.Server": {
       "commandName": "Project",
       "launchBrowser": false,
-      "launchUrl": "http://localhost:1270/swagger",
+      "launchUrl": "http://localhost:3270/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:1270"
+      "applicationUrl": "http://localhost:3270"
     }
   }
 }

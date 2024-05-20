@@ -15,8 +15,10 @@ namespace FastTunnel.Server.Models
         public ErrorCodeEnum code { get; set; }
 
         public string message { get; set; }
-
-        public object data { get; set; }
+    }
+    public class ApiResponse<T>: ApiResponse
+    {
+        public T data { get; set; }
     }
 
     public enum ErrorCodeEnum

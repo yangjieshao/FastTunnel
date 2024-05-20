@@ -4,38 +4,43 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
+using FastTunnel.Api.Helper;
 using FastTunnel.Core.Client;
+using FastTunnel.Core.Config;
+using FastTunnel.Core.Models;
 using FastTunnel.Server.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace FastTunnel.Api.Controllers;
 
-public class SystemController : BaseController
+[Route("api/[controller]/[action]")]
+[ApiController]
+[ServiceFilter(typeof(CustomExceptionFilterAttribute))]
+public class SystemController : ControllerBase
 {
     private readonly FastTunnelServer fastTunnelServer;
+    private readonly IOptionsMonitor<DefaultServerConfig> serverOptionsMonitor;
 
-    public SystemController(FastTunnelServer fastTunnelServer)
+    private readonly ILogger<SystemController> _logger;
+
+    public SystemController(FastTunnelServer fastTunnelServer, ILogger<SystemController> logger, IOptionsMonitor<DefaultServerConfig> optionsMonitor)
     {
         this.fastTunnelServer = fastTunnelServer;
+        _logger = logger;
+        serverOptionsMonitor = optionsMonitor;
     }
 
     /// <summary>
     /// 获取当前等待响应的请求
     /// </summary>
-    /// <returns></returns>
     [HttpGet]
-    public ApiResponse GetResponseTempList()
+    public ApiResponse<ResponseTempListInfo> GetResponseTempList()
     {
-        ApiResponse.data = new
+        return new()
         {
-            Count = fastTunnelServer.ResponseTasks.Count,
-            Rows = fastTunnelServer.ResponseTasks.Select(x => new
-            {
-                x.Key
-            })
+            data = fastTunnelServer.GetResponseTempList()
         };
-
-        return ApiResponse;
     }
 
     /// <summary>
@@ -43,48 +48,47 @@ public class SystemController : BaseController
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public ApiResponse GetAllWebList()
+    public ApiResponse<WebListInfo> GetAllWebList()
     {
-        ApiResponse.data = new
+        return new()
         {
-            Count = fastTunnelServer.WebList.Count,
-            Rows = fastTunnelServer.WebList.Select(x => new { x.Key, x.Value.WebConfig.LocalIp, x.Value.WebConfig.LocalPort })
+            data = fastTunnelServer.GetAllWebList()
         };
-
-        return ApiResponse;
     }
 
-    /// <summary>
-    /// 获取服务端配置信息
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet]
-    public ApiResponse GetServerOption()
-    {
-        ApiResponse.data = fastTunnelServer.ServerOption;
-        return ApiResponse;
-    }
+    ///// <summary>
+    ///// 获取服务端配置信息
+    ///// </summary>
+    ///// <returns></returns>
+    //[HttpGet]
+    //public ApiResponse GetServerOption()
+    //{
+    //    ApiResponse.data = fastTunnelServer.ServerOption;
+    //    return ApiResponse;
+    //}
 
     /// <summary>
     /// 获取所有端口转发映射列表
     /// </summary>
-    /// <returns></returns>
     [HttpGet]
-    public ApiResponse GetAllForwardList()
+    public ApiResponse<ForwardListInfo> GetAllForwardList()
     {
-        ApiResponse.data = new
+        return new ()
         {
-            Count = fastTunnelServer.ForwardList.Count,
-            Rows = fastTunnelServer.ForwardList.Select(x => new
-            {
-                x.Key,
-                x.Value.SSHConfig.LocalIp,
-                x.Value.SSHConfig.LocalPort,
-                x.Value.SSHConfig.RemotePort
-            })
+             data = fastTunnelServer.GetAllForwardList()
         };
+    }
 
-        return ApiResponse;
+    /// <summary>
+    /// 获取所有端口已占用端口
+    /// </summary>
+    [HttpGet]
+    public ApiResponse<IEnumerable<int>> GetAllUsedPort()
+    {
+        return new()
+        {
+            data = fastTunnelServer.ForwardList.Select(x => x.Key)
+        };
     }
 
     /// <summary>
@@ -92,22 +96,20 @@ public class SystemController : BaseController
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public ApiResponse GetOnlineClientCount()
+    public ApiResponse<int> GetOnlineClientCount()
     {
-        ApiResponse.data = fastTunnelServer.ConnectedClientCount;
-        return ApiResponse;
+        return new()
+        {
+            data = fastTunnelServer.ConnectedClientCount
+        };
     }
 
     [HttpGet]
-    public ApiResponse Clients()
+    public ApiResponse<IEnumerable<ClientInfo>> Clients()
     {
-        ApiResponse.data = fastTunnelServer.Clients.Select(x => new
+        return new()
         {
-            x.WebInfos,
-            x.ForwardInfos,
-            RemoteIpAddress = x.RemoteIpAddress.ToString(),
-            StartTime = x.StartTime.ToString("yyyy-MM-dd HH:mm:ss")
-        });
-        return ApiResponse;
+            data = fastTunnelServer.GetClients()
+        };
     }
 }

@@ -8,7 +8,7 @@ using FastTunnel.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace FastTunnel.Api.Filters
+namespace FastTunnel.Api.Helper
 {
     public class CustomExceptionFilterAttribute : ExceptionFilterAttribute
     {
@@ -25,7 +25,6 @@ namespace FastTunnel.Api.Filters
             var res = new ApiResponse()
             {
                 code = ErrorCodeEnum.Exception,
-                data = null,
                 message = context.Exception.Message,
             };
 

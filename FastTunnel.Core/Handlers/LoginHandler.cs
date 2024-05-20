@@ -96,11 +96,11 @@ public class LoginHandler : ILoginHandler
                         if (item.LocalPort == 22)
                             tips.Add("您已将22端口暴露，请确保您的PC密码足够安全。");
 
-                        if (server.ForwardList.TryGetValue(item.RemotePort, out var old))
+                        if (server.TryGetValueForward(item.RemotePort, out var old))
                         {
                             logger.LogDebug("Remove Listener {ListenIp}:{ListenPort}", old.Listener.ListenIp, old.Listener.ListenPort);
                             old.Listener.Stop();
-                            server.ForwardList.TryRemove(item.RemotePort, out var _);
+                            server.RemoveForward(item.RemotePort);
                         }
 
                         // TODO: 客户端离线时销毁
@@ -110,7 +110,7 @@ public class LoginHandler : ILoginHandler
                         var forwardInfo = new ForwardInfo<ForwardHandlerArg> { Listener = ls, Socket = client.webSocket, SSHConfig = item };
 
                         // TODO: 客户端离线时销毁
-                        server.ForwardList.TryAdd(item.RemotePort, forwardInfo);
+                        server.AddForward(item.RemotePort, forwardInfo);
                         logger.LogDebug("SSH proxy success: {RemotePort} => {LocalIp}:{LocalPort}", item.RemotePort, item.LocalIp, item.LocalPort);
 
                         client.AddForward(forwardInfo);

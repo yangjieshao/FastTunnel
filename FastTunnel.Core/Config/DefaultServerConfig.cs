@@ -17,12 +17,11 @@ namespace FastTunnel.Core.Config
 
         public bool EnableForward { get; set; }
 
-        [Obsolete("由Tokens替换")]
-        public string Token { get; set; }
-
         public List<string> Tokens { get; set; }
 
         public ApiOptions Api { get; set; }
+
+        public PortPoolInfo PortPool { get; set; }
 
         public class ApiOptions
         {
@@ -49,6 +48,18 @@ namespace FastTunnel.Core.Config
             public string Name { get; set; }
 
             public string Password { get; set; }
+        }
+
+        public class PortPoolInfo
+        {
+            public int Min { get; set; }
+
+            public int Max { get; set; }
+
+            public override string ToString()
+            {
+                return $"PortPool: {Min} ~ {Max}";
+            }
         }
     }
 }
