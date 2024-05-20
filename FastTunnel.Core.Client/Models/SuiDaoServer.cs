@@ -4,9 +4,6 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using FastTunnel.Core.Models;
-using System.Collections.Generic;
-
 namespace FastTunnel.Core.Config
 {
     public class SuiDaoServer

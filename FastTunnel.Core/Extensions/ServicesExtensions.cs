@@ -25,11 +25,9 @@ namespace FastTunnel.Core.Extensions;
 
 public static class ServicesExtensions
 {
-
     /// <summary>
     /// 添加服务端后台进程
     /// </summary>
-    /// <param name="services"></param>
     public static void AddFastTunnelServer(this IServiceCollection services, IConfigurationSection configurationSection)
     {
         services.AddReverseProxy().LoadFromMemory();

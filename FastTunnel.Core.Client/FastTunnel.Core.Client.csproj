@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <Version>2.1.2</Version>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>1701;1702;IDE0161;CS1591;CA1305;IDE1006;IDE0290;CA1822</NoWarn>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Include="..\FastTunnel.Core\Extensions\ObjectExtensions.cs" Link="Extensions\ObjectExtensions.cs" />
     <Compile Include="..\FastTunnel.Core\Exceptions\SocketClosedException.cs" Link="Exceptions\SocketClosedException.cs" />

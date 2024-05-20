@@ -5,8 +5,6 @@
 // Copyright (c) 2019 Gui.H
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FastTunnel.Core.Exceptions
 {

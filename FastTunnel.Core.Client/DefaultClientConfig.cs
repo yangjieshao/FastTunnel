@@ -4,15 +4,17 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
+using System.Collections.Generic;
 using FastTunnel.Core.Client;
 using FastTunnel.Core.Models;
-using System.Collections.Generic;
 
 namespace FastTunnel.Core.Config
 {
     public class DefaultClientConfig : IClientConfig
     {
-        public DefaultClientConfig() { }
+        public DefaultClientConfig()
+        { }
+
         public SuiDaoServer Server { get; set; }
 
         public string Token { get; set; }

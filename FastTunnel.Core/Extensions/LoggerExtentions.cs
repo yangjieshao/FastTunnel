@@ -4,8 +4,8 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using Microsoft.Extensions.Logging;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace FastTunnel.Core.Extensions
 {
@@ -13,7 +13,7 @@ namespace FastTunnel.Core.Extensions
     {
         public static void LogError(this ILogger logger, Exception ex)
         {
-            logger.LogError(ex, string.Empty);
+            logger.LogError(ex);
         }
     }
 }

@@ -4,41 +4,41 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using FastTunnel.Core.Handlers;
-using FastTunnel.Core.Handlers.Server;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
+using System.Threading.Tasks;
+using FastTunnel.Core.Handlers;
+using Microsoft.Extensions.Logging;
 
 namespace FastTunnel.Core.Listener
 {
     public class PortProxyListener
     {
-        readonly ILogger _logerr;
+        private readonly ILogger _logerr;
 
         public string ListenIp { get; set; }
 
         public int ListenPort { get; set; }
 
-        int m_numConnectedSockets;
+        private int m_numConnectedSockets;
 
-        bool shutdown;
-        ForwardDispatcher _requestDispatcher;
-        readonly Socket listenSocket;
-        readonly WebSocket client;
+        private bool shutdown;
+        private ForwardDispatcher _requestDispatcher;
+        private readonly Socket listenSocket;
+        private readonly WebSocket client;
 
         public PortProxyListener(string ip, int port, ILogger logerr, WebSocket client)
         {
             this.client = client;
             _logerr = logerr;
-            this.ListenIp = ip;
-            this.ListenPort = port;
+            ListenIp = ip;
+            ListenPort = port;
 
-            IPAddress ipa = IPAddress.Parse(ListenIp);
-            IPEndPoint localEndPoint = new IPEndPoint(ipa, ListenPort);
+            var ipa = IPAddress.Parse(ListenIp);
+            var localEndPoint = new IPEndPoint(ipa, ListenPort);
 
             listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             listenSocket.Bind(localEndPoint);
@@ -58,7 +58,7 @@ namespace FastTunnel.Core.Listener
         {
             try
             {
-                _logerr.LogDebug($"【{ListenIp}:{ListenPort}】: StartAccept");
+                _logerr.LogDebug("【{ListenIp}:{ListenPort}】: StartAccept", ListenIp, ListenPort);
                 if (acceptEventArg == null)
                 {
                     acceptEventArg = new SocketAsyncEventArgs();
@@ -70,7 +70,7 @@ namespace FastTunnel.Core.Listener
                     acceptEventArg.AcceptSocket = null;
                 }
 
-                bool willRaiseEvent = listenSocket.AcceptAsync(acceptEventArg);
+                var willRaiseEvent = listenSocket.AcceptAsync(acceptEventArg);
                 if (!willRaiseEvent)
                 {
                     ProcessAcceptAsync(acceptEventArg);
@@ -91,7 +91,7 @@ namespace FastTunnel.Core.Listener
                 IncrementClients();
 
                 // 将此客户端交由Dispatcher进行管理
-                _requestDispatcher.DispatchAsync(accept, client, this);
+                _ = _requestDispatcher.DispatchAsync(accept, client, this);
 
                 // Accept the next connection request
                 StartAccept(e);
@@ -100,6 +100,7 @@ namespace FastTunnel.Core.Listener
             {
                 Stop();
             }
+            await Task.CompletedTask;
         }
 
         private void AcceptEventArg_Completed(object sender, SocketAsyncEventArgs e)
@@ -132,15 +133,13 @@ namespace FastTunnel.Core.Listener
         internal void IncrementClients()
         {
             Interlocked.Increment(ref m_numConnectedSockets);
-            _logerr.LogInformation($"[Listener:{ListenPort}] Accepted. There are {{0}} clients connected", m_numConnectedSockets);
-
+            _logerr.LogInformation("[Listener:{ListenPort}] Accepted. There are {m_numConnectedSockets} clients connected", ListenPort, m_numConnectedSockets);
         }
 
         internal void DecrementClients()
         {
             Interlocked.Decrement(ref m_numConnectedSockets);
-            _logerr.LogInformation($"[Listener:{ListenPort}] DisConnet. There are {{0}} clients connecting", m_numConnectedSockets);
-
+            _logerr.LogInformation("[Listener:{ListenPort}] DisConnet. There are {m_numConnectedSockets} clients connecting", ListenPort, m_numConnectedSockets);
         }
     }
 }

@@ -4,33 +4,28 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using FastTunnel.Core.Client;
-using FastTunnel.Core.Extensions;
-using FastTunnel.Core.Models;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using FastTunnel.Core.Client;
+using FastTunnel.Core.Extensions;
+using FastTunnel.Core.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.Forwarder;
 
 namespace FastTunnel.Core.Forwarder;
 
 public class FastTunnelForwarderHttpClientFactory : ForwarderHttpClientFactory
 {
-    readonly ILogger<FastTunnelForwarderHttpClientFactory> logger;
-    readonly FastTunnelServer fastTunnelServer;
+    private readonly ILogger<FastTunnelForwarderHttpClientFactory> logger;
+    private readonly FastTunnelServer fastTunnelServer;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    static int connectionCount;
+    private static int connectionCount;
 
     public FastTunnelForwarderHttpClientFactory(
         ILogger<FastTunnelForwarderHttpClientFactory> logger,
@@ -67,14 +62,13 @@ public class FastTunnelForwarderHttpClientFactory : ForwarderHttpClientFactory
         finally
         {
             Interlocked.Decrement(ref connectionCount);
-            logger.LogDebug($"统计YARP连接数：{connectionCount}");
+            logger.LogDebug("统计YARP连接数：{connectionCount}", connectionCount);
         }
     }
 
     public async ValueTask<Stream> proxyAsync(string host, SocketsHttpConnectionContext context, CancellationToken cancellation)
     {
-        WebInfo web;
-        if (!fastTunnelServer.WebList.TryGetValue(host, out web))
+        if (!fastTunnelServer.WebList.TryGetValue(host, out var web))
         {
             // 客户端已离线
             return await OfflinePage(host, context);
@@ -83,11 +77,12 @@ public class FastTunnelForwarderHttpClientFactory : ForwarderHttpClientFactory
         var msgId = Guid.NewGuid().ToString().Replace("-", "");
 
         TaskCompletionSource<Stream> tcs = new();
-        logger.LogDebug($"[Http]Swap开始 {msgId}|{host}=>{web.WebConfig.LocalIp}:{web.WebConfig.LocalPort}");
+        logger.LogDebug("[Http]Swap开始 {msgId}|{host}=>{LocalIp}:{LocalPort}"
+            , msgId, host, web.WebConfig.LocalIp, web.WebConfig.LocalPort);
 
         cancellation.Register(() =>
         {
-            logger.LogDebug($"[Proxy TimeOut]:{msgId}");
+            logger.LogDebug("[Proxy TimeOut]:{msgId}", msgId);
             tcs.TrySetCanceled();
         });
 
@@ -99,7 +94,7 @@ public class FastTunnelForwarderHttpClientFactory : ForwarderHttpClientFactory
             await web.Socket.SendCmdAsync(MessageType.SwapMsg, $"{msgId}|{web.WebConfig.LocalIp}:{web.WebConfig.LocalPort}", cancellation);
             var res = await tcs.Task.WaitAsync(cancellation);
 
-            logger.LogDebug($"[Http]Swap OK {msgId}");
+            logger.LogDebug("[Http]Swap OK {msgId}", msgId);
             return res;
         }
         catch (WebSocketException)
@@ -116,7 +111,6 @@ public class FastTunnelForwarderHttpClientFactory : ForwarderHttpClientFactory
             fastTunnelServer.ResponseTasks.TryRemove(msgId, out _);
         }
     }
-
 
     private async ValueTask<Stream> OfflinePage(string host, SocketsHttpConnectionContext context)
     {

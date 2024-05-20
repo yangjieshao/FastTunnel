@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <Version>2.1.2</Version>
     <PackageProjectUrl>https://github.com/SpringHgui/FastTunnel</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -17,9 +17,12 @@
     <PackageTags>FastTunnel.Core</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReleaseNotes>FastTunnel.Core</PackageReleaseNotes>
-    <LangVersion>Preview</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>1701;1702;IDE0161;CS1591;CA1835;CA1822;CA1816;IDE0290;IDE1006;IDE0060</NoWarn>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Remove="Listener\PortProxyListenerV2.cs" />
     <Compile Remove="Listener\TcpServerHandler.cs" />

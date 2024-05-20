@@ -4,18 +4,18 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using FastTunnel.Core.Config;
+using FastTunnel.Core.Forwarder.MiddleWare;
 using FastTunnel.Core.Models;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System;
-using System.Threading.Tasks;
-using System.Threading;
 using Microsoft.Extensions.Options;
-using System.IO;
 using Yarp.ReverseProxy.Configuration;
-using System.Collections.Generic;
-using FastTunnel.Core.Forwarder.MiddleWare;
 
 namespace FastTunnel.Core.Client
 {
@@ -24,7 +24,7 @@ namespace FastTunnel.Core.Client
         public int ConnectedClientCount;
         public readonly IOptionsMonitor<DefaultServerConfig> ServerOption;
         public IProxyConfigProvider proxyConfig;
-        readonly ILogger<FastTunnelServer> logger;
+        private readonly ILogger<FastTunnelServer> logger;
 
         public ConcurrentDictionary<string, (TaskCompletionSource<Stream>, CancellationToken)> ResponseTasks { get; } = new();
 
@@ -36,12 +36,12 @@ namespace FastTunnel.Core.Client
         /// <summary>
         /// 在线客户端列表
         /// </summary>
-        public IList<TunnelClient> Clients = new List<TunnelClient>();
+        public IList<TunnelClient> Clients = [];
 
         public FastTunnelServer(ILogger<FastTunnelServer> logger, IProxyConfigProvider proxyConfig, IOptionsMonitor<DefaultServerConfig> serverSettings)
         {
             this.logger = logger;
-            this.ServerOption = serverSettings;
+            ServerOption = serverSettings;
             this.proxyConfig = proxyConfig;
         }
 
@@ -52,7 +52,8 @@ namespace FastTunnel.Core.Client
         internal void ClientLogin(TunnelClient client)
         {
             Interlocked.Increment(ref ConnectedClientCount);
-            logger.LogInformation($"客户端连接 {client.RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计CLIENT连接数：{FastTunnelClientHandler.ConnectionCount}");
+            logger.LogInformation("客户端连接 {RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计CLIENT连接数：{ConnectionCount}"
+                , client.RemoteIpAddress, ConnectedClientCount, FastTunnelClientHandler.ConnectionCount);
             Clients.Add(client);
         }
 
@@ -64,7 +65,8 @@ namespace FastTunnel.Core.Client
         internal void ClientLogout(TunnelClient client)
         {
             Interlocked.Decrement(ref ConnectedClientCount);
-            logger.LogInformation($"客户端关闭  {client.RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计CLIENT连接数：{FastTunnelClientHandler.ConnectionCount - 1}");
+            logger.LogInformation("客户端关闭  {RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计CLIENT连接数：{ConnectionCount }"
+                , client.RemoteIpAddress, ConnectedClientCount, FastTunnelClientHandler.ConnectionCount - 1);
             Clients.Remove(client);
             client.Logout();
         }

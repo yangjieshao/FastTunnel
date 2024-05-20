@@ -6,18 +6,13 @@
 
 using FastTunnel.Core.Client;
 using FastTunnel.Server.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FastTunnel.Api.Controllers;
 
 public class SystemController : BaseController
 {
-    readonly FastTunnelServer fastTunnelServer;
+    private readonly FastTunnelServer fastTunnelServer;
 
     public SystemController(FastTunnelServer fastTunnelServer)
     {

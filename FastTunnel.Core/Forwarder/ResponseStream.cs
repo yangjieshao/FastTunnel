@@ -23,7 +23,7 @@ namespace FastTunnel.Core.Forwarder
 
         public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        readonly MemoryStream m_Stream;
+        private readonly MemoryStream m_Stream;
 
         public ResponseStream(byte[] bytes)
         {
@@ -35,7 +35,7 @@ namespace FastTunnel.Core.Forwarder
             throw new NotImplementedException();
         }
 
-        bool complete;
+        private bool complete;
 
         public override int Read(byte[] buffer, int offset, int count)
         {

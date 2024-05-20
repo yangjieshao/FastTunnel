@@ -4,29 +4,26 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
+using System;
+using System.IO;
+using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
 using FastTunnel.Core.Client;
 using FastTunnel.Core.Exceptions;
 using FastTunnel.Core.Extensions;
 using FastTunnel.Core.Listener;
 using FastTunnel.Core.Models;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Sockets;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FastTunnel.Core.Handlers
 {
     public class ForwardDispatcher
     {
-        private FastTunnelServer _server;
-        private ForwardConfig _config;
-        ILogger logger;
+        private readonly FastTunnelServer _server;
+        private readonly ForwardConfig _config;
+        private readonly ILogger logger;
 
         public ForwardDispatcher(ILogger logger, FastTunnelServer server, ForwardConfig config)
         {
@@ -36,10 +33,10 @@ namespace FastTunnel.Core.Handlers
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="_socket">用户请求</param>
         /// <param name="client">FastTunnel客户端</param>
+        /// <param name="listener"></param>
         /// <returns></returns>
         public async Task DispatchAsync(Socket _socket, WebSocket client, PortProxyListener listener)
         {
@@ -48,7 +45,8 @@ namespace FastTunnel.Core.Handlers
             try
             {
                 await Task.Yield();
-                logger.LogDebug($"[Forward]Swap开始 {msgId}|{_config.RemotePort}=>{_config.LocalIp}:{_config.LocalPort}");
+                logger.LogDebug("[Forward]Swap开始 {msgId}|{RemotePort}=>{LocalIp}:{LocalPort}"
+                    , msgId, _config.RemotePort, _config.LocalIp, _config.LocalPort);
 
                 var tcs = new TaskCompletionSource<Stream>();
 
@@ -61,7 +59,7 @@ namespace FastTunnel.Core.Handlers
                 catch (SocketClosedException sex)
                 {
                     // TODO:客户端已掉线，但是没有移除对端口的监听
-                    logger.LogError($"[Forward]Swap 客户端已离线 {sex.Message}");
+                    logger.LogError("[Forward]Swap 客户端已离线 {msg}", sex.Message);
                     tcs.TrySetCanceled();
                     Close(_socket);
                     return;
@@ -75,19 +73,17 @@ namespace FastTunnel.Core.Handlers
                     return;
                 }
 
-                using (var stream1 = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10)))
-                using (var stream2 = new NetworkStream(_socket, true) { ReadTimeout = 1000 * 60 * 10 })
-                {
-                    await Task.WhenAny(stream1.CopyToAsync(stream2), stream2.CopyToAsync(stream1));
-                }
+                using var stream1 = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                using var stream2 = new NetworkStream(_socket, true) { ReadTimeout = 1000 * 60 * 10 };
+                await Task.WhenAny(stream1.CopyToAsync(stream2), stream2.CopyToAsync(stream1));
             }
             catch (Exception ex)
             {
-                logger.LogDebug($"[Forward]Swap Error {msgId}：" + ex.Message);
+                logger.LogDebug("[Forward]Swap Error {msgId}：{msg}", msgId, ex.Message);
             }
             finally
             {
-                logger.LogDebug($"[Forward]Swap结束 {msgId}");
+                logger.LogDebug("[Forward]Swap结束 {msgId}", msgId);
                 _server.ResponseTasks.TryRemove(msgId, out _);
                 listener.DecrementClients();
             }

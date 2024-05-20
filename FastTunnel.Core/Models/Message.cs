@@ -4,10 +4,6 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace FastTunnel.Core.Models
 {
     public struct Message<T>

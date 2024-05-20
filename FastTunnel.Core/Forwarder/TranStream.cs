@@ -1,15 +1,12 @@
-﻿// Copyright (c) 2019-2022 Gui.H. https://github.com/FastTunnel/FastTunnel
+// Copyright (c) 2019-2022 Gui.H. https://github.com/FastTunnel/FastTunnel
 // The FastTunnel licenses this file to you under the Apache License Version 2.0.
 // For more details,You may obtain License file at: https://github.com/FastTunnel/FastTunnel/blob/v2/LICENSE
 
-using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace FastTunnel.Core.Forwarder
 {
@@ -20,9 +17,10 @@ namespace FastTunnel.Core.Forwarder
 
         public TranStream(HttpContext context)
         {
-            this.readStream = context.Request.BodyReader.AsStream();
-            this.wirteStream = context.Response.BodyWriter.AsStream();
+            readStream = context.Request.BodyReader.AsStream();
+            wirteStream = context.Response.BodyWriter.AsStream();
         }
+
         public override bool CanRead => true;
 
         public override bool CanSeek => false;
@@ -39,12 +37,12 @@ namespace FastTunnel.Core.Forwarder
 
         public override void Flush()
         {
-            this.wirteStream.Flush();
+            wirteStream.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            return this.wirteStream.FlushAsync(cancellationToken);
+            return wirteStream.FlushAsync(cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -59,37 +57,39 @@ namespace FastTunnel.Core.Forwarder
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return this.readStream.Read(buffer, offset, count);
+            return readStream.Read(buffer, offset, count);
         }
+
         public override void Write(byte[] buffer, int offset, int count)
         {
-            this.wirteStream.Write(buffer, offset, count);
+            wirteStream.Write(buffer, offset, count);
         }
+
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            return this.readStream.ReadAsync(buffer, cancellationToken);
+            return readStream.ReadAsync(buffer, cancellationToken);
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var len = await this.readStream.ReadAsync(buffer, offset, count, cancellationToken);
+            var len = await readStream.ReadAsync(buffer, offset, count, cancellationToken);
             if (len == 0) { Console.WriteLine("==========ReadAsync END=========="); }
             return len;
         }
 
         public override void Write(ReadOnlySpan<byte> buffer)
         {
-            this.wirteStream.Write(buffer);
+            wirteStream.Write(buffer);
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return this.wirteStream.WriteAsync(buffer, offset, count, cancellationToken);
+            return wirteStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            await this.wirteStream.WriteAsync(buffer, cancellationToken);
+            await wirteStream.WriteAsync(buffer, cancellationToken);
         }
 
         protected override void Dispose(bool disposing)

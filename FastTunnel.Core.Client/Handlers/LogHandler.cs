@@ -22,7 +22,9 @@ public class LogHandler : IClientHandler
 
     public async Task HandlerMsgAsync(FastTunnelClient cleint, string msg, CancellationToken cancellationToken)
     {
+#pragma warning disable CA2254 // 模板应为静态表达式
         _logger.LogInformation(msg);
+#pragma warning restore CA2254 // 模板应为静态表达式
         await Task.CompletedTask;
     }
 }

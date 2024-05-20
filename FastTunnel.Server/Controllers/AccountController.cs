@@ -4,6 +4,8 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using FastTunnel.Api.Models;
 using FastTunnel.Core.Config;
 using FastTunnel.Server.Models;
@@ -11,17 +13,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
 
 namespace FastTunnel.Api.Controllers
 {
     public class AccountController : BaseController
     {
-        readonly IOptionsMonitor<DefaultServerConfig> serverOptionsMonitor;
+        private readonly IOptionsMonitor<DefaultServerConfig> serverOptionsMonitor;
 
         public AccountController(IOptionsMonitor<DefaultServerConfig> optionsMonitor)
         {
@@ -37,7 +34,7 @@ namespace FastTunnel.Api.Controllers
         [HttpPost]
         public ApiResponse GetToken(GetTokenRequest request)
         {
-            if ((serverOptionsMonitor.CurrentValue?.Api?.Accounts?.Length ?? 0) == 0)
+            if ((serverOptionsMonitor?.CurrentValue?.Api?.Accounts?.Length ?? 0) == 0)
             {
                 ApiResponse.code = ErrorCodeEnum.NoAccount;
                 ApiResponse.message = "账号或密码错误";

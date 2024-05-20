@@ -29,4 +29,3 @@ public static class ServicesExtensions
         services.AddHostedService<ServiceFastTunnelClient>();
     }
 }
-

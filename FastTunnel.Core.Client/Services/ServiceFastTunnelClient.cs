@@ -4,22 +4,19 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using FastTunnel.Core.Client;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.ExceptionServices;
-using System.IO;
+using FastTunnel.Core.Client;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace FastTunnel.Core.Services
 {
     public class ServiceFastTunnelClient : IHostedService
     {
-        readonly ILogger<ServiceFastTunnelClient> _logger;
-        readonly IFastTunnelClient _fastTunnelClient;
+        private readonly ILogger<ServiceFastTunnelClient> _logger;
+        private readonly IFastTunnelClient _fastTunnelClient;
 
         public ServiceFastTunnelClient(ILogger<ServiceFastTunnelClient> logger, IFastTunnelClient fastTunnelClient)
         {
@@ -43,9 +40,9 @@ namespace FastTunnel.Core.Services
         {
             try
             {
-                _logger.LogError("【UnhandledException】" + e.ExceptionObject);
+                _logger.LogError("【UnhandledException】{ex}", e.ExceptionObject);
                 var type = e.ExceptionObject.GetType();
-                _logger.LogError("ExceptionObject GetType " + type);
+                _logger.LogError("ExceptionObject GetType {type}", type);
             }
             catch
             {

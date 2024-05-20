@@ -4,16 +4,12 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using FastTunnel.Core.Exceptions;
-using FastTunnel.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FastTunnel.Core.Exceptions;
+using FastTunnel.Core.Models;
 
 namespace FastTunnel.Core.Extensions
 {

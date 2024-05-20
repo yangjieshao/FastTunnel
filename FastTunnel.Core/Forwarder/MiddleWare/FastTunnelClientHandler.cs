@@ -2,29 +2,28 @@
 // The FastTunnel licenses this file to you under the Apache License Version 2.0.
 // For more details,You may obtain License file at: https://github.com/FastTunnel/FastTunnel/blob/v2/LICENSE
 
+using System;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
 using FastTunnel.Core.Client;
 using FastTunnel.Core.Extensions;
 using FastTunnel.Core.Handlers.Server;
 using FastTunnel.Core.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FastTunnel.Core.Forwarder.MiddleWare
 {
     public class FastTunnelClientHandler
     {
-        readonly ILogger<FastTunnelClientHandler> logger;
-        readonly FastTunnelServer fastTunnelServer;
-        readonly Version serverVersion;
-        readonly ILoginHandler loginHandler;
+        private readonly ILogger<FastTunnelClientHandler> logger;
+        private readonly FastTunnelServer fastTunnelServer;
+        private readonly Version serverVersion;
+        private readonly ILoginHandler loginHandler;
 
-        static int connectionCount;
+        private static int connectionCount;
 
         public static int ConnectionCount => connectionCount;
 
@@ -83,8 +82,10 @@ namespace FastTunnel.Core.Forwarder.MiddleWare
 
             var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
             var log = loggerFactory.CreateLogger<TunnelClient>();
-            var client = new TunnelClient(webSocket, fastTunnelServer, loginHandler, context.Connection.RemoteIpAddress, log);
-            client.ConnectionPort = context.Connection.LocalPort;
+            var client = new TunnelClient(webSocket, fastTunnelServer, loginHandler, context.Connection.RemoteIpAddress, log)
+            {
+                ConnectionPort = context.Connection.LocalPort
+            };
 
             try
             {

@@ -7,13 +7,12 @@
 using FastTunnel.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
 
 namespace FastTunnel.Api.Filters
 {
     public class CustomExceptionFilterAttribute : ExceptionFilterAttribute
     {
-        readonly ILogger<CustomExceptionFilterAttribute> _logger;
+        private readonly ILogger<CustomExceptionFilterAttribute> _logger;
 
         public CustomExceptionFilterAttribute(ILogger<CustomExceptionFilterAttribute> logger)
         {

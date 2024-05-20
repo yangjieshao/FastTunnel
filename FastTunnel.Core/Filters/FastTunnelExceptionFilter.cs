@@ -1,10 +1,10 @@
-﻿// Licensed under the Apache License, Version 2.0 (the "License")
+// Licensed under the Apache License, Version 2.0 (the "License")
 
-using Microsoft.AspNetCore.Mvc.Filters;
+using FastTunnel.Core.Extensions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using FastTunnel.Core.Extensions;
 
 namespace FastTunnel.Core.Filters
 {

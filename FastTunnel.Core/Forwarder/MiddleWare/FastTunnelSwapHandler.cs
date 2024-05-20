@@ -1,29 +1,28 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using FastTunnel.Core.Client;
 using FastTunnel.Core.Extensions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FastTunnel.Core.Forwarder.MiddleWare
 {
     public class FastTunnelSwapHandler
     {
-        ILogger<FastTunnelClientHandler> logger;
-        FastTunnelServer fastTunnelServer;
-        static int connectionCount;
+        private readonly ILogger<FastTunnelClientHandler> logger;
+        private FastTunnelServer fastTunnelServer;
+        private static int connectionCount;
 
         public static int ConnectionCount => connectionCount;
+
+        public FastTunnelServer FastTunnelServer { get => fastTunnelServer; set => fastTunnelServer = value; }
 
         public FastTunnelSwapHandler(ILogger<FastTunnelClientHandler> logger, FastTunnelServer fastTunnelServer)
         {
             this.logger = logger;
-            this.fastTunnelServer = fastTunnelServer;
+            FastTunnelServer = fastTunnelServer;
         }
 
         public async Task Handle(HttpContext context, Func<Task> next)
@@ -39,11 +38,11 @@ namespace FastTunnel.Core.Forwarder.MiddleWare
                 }
 
                 var requestId = context.Request.Path.Value.Trim('/');
-                logger.LogDebug($"[PROXY]:Start {requestId}");
+                logger.LogDebug("[PROXY]:Start {requestId}", requestId);
 
-                if (!fastTunnelServer.ResponseTasks.TryRemove(requestId, out var responseAwaiter))
+                if (!FastTunnelServer.ResponseTasks.TryRemove(requestId, out var responseAwaiter))
                 {
-                    logger.LogError($"[PROXY]:RequestId不存在 {requestId}");
+                    logger.LogError("[PROXY]:RequestId不存在 {requestId}", requestId);
                     return;
                 };
 
@@ -76,7 +75,7 @@ namespace FastTunnel.Core.Forwarder.MiddleWare
                 //}, closedAwaiter);
 
                 await closedAwaiter.Task.WaitAsync(cts.Token);
-                logger.LogDebug($"[PROXY]:Closed {requestId}");
+                logger.LogDebug("[PROXY]:Closed {requestId}", requestId);
             }
             catch (TaskCanceledException) { }
             catch (Exception ex)
@@ -86,7 +85,7 @@ namespace FastTunnel.Core.Forwarder.MiddleWare
             finally
             {
                 Interlocked.Decrement(ref connectionCount);
-                logger.LogDebug($"统计SWAP连接数：{ConnectionCount}");
+                logger.LogDebug("统计SWAP连接数：{ConnectionCount}", ConnectionCount);
             }
         }
     }

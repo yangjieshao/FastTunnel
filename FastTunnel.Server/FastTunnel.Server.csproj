@@ -2,9 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>1701;1702;IDE0161;CS1591;IDE0290;IDE1006;IDE0037</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

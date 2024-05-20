@@ -7,9 +7,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Net;
-using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -36,8 +34,8 @@ public class TunnelClient
 
     public IPAddress RemoteIpAddress { get; private set; }
 
-    public readonly IList<WebInfo> WebInfos = new List<WebInfo>();
-    public readonly IList<ForwardInfo<ForwardHandlerArg>> ForwardInfos = new List<ForwardInfo<ForwardHandlerArg>>();
+    public readonly IList<WebInfo> WebInfos = [];
+    public readonly IList<ForwardInfo<ForwardHandlerArg>> ForwardInfos = [];
 
     public TunnelClient(
         WebSocket webSocket, FastTunnelServer fastTunnelServer,
@@ -47,8 +45,8 @@ public class TunnelClient
         this.webSocket = webSocket;
         this.fastTunnelServer = fastTunnelServer;
         this.loginHandler = loginHandler;
-        this.RemoteIpAddress = remoteIpAddress;
-        this.StartTime = DateTime.Now;
+        RemoteIpAddress = remoteIpAddress;
+        StartTime = DateTime.Now;
     }
 
     public DateTime StartTime { get; }
@@ -84,11 +82,11 @@ public class TunnelClient
     {
         try
         {
-            return await loginHandler.HandlerMsg(fastTunnelServer, tunnelClient, lineCmd.Substring(1), cancellationToken);
+            return await loginHandler.HandlerMsg(fastTunnelServer, tunnelClient, lineCmd[1..], cancellationToken);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"处理客户端消息失败：cmd={lineCmd} {ex}");
+            logger.LogError(ex, "处理客户端消息失败：cmd={lineCmd}", lineCmd);
             return false;
         }
     }

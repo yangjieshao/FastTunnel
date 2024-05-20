@@ -10,12 +10,9 @@ using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace FastTunnel.Core.Utilitys
 {
-
-
     public class WebSocketUtility
     {
         private readonly WebSocket webSocket;
@@ -95,7 +92,7 @@ namespace FastTunnel.Core.Utilitys
                 var result = await reader.ReadAsync(cancellationToken);
                 var buffer = result.Buffer;
 
-                while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
+                while (TryReadLine(ref buffer, out var line))
                 {
                     // Process the line.
                     ProcessLine(line, cancellationToken);
@@ -115,10 +112,10 @@ namespace FastTunnel.Core.Utilitys
             await reader.CompleteAsync();
         }
 
-        bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
+        private bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
         {
             // Look for a EOL in the buffer.
-            SequencePosition? position = buffer.PositionOf((byte)'\n');
+            var position = buffer.PositionOf((byte)'\n');
 
             if (position == null)
             {
