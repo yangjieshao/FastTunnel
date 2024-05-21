@@ -83,7 +83,14 @@ public class Program
 
             app.MapFastTunnelServer(apioptions.WebDomain);
 
-            app.Run();
+
+            var mainTask = app.RunAsync();
+
+            logger?.LogInformation("正在初始化检测有效端口池");
+            var cacheHelper = app.Services.GetService<CacheHelper>();
+            logger?.LogInformation("初始化检测有效端口池完毕");
+
+            mainTask.Wait();
         }
         catch (System.Exception ex)
         {
