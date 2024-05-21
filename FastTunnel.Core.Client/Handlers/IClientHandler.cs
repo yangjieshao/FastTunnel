@@ -19,6 +19,6 @@ namespace FastTunnel.Core.Handlers.Client
         /// <param name="msg"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task HandlerMsgAsync(FastTunnelClient cleint, string msg, CancellationToken cancellationToken);
+        Task HandlerMsgAsync(IFastTunnelClient cleint, string msg, CancellationToken cancellationToken);
     }
 }

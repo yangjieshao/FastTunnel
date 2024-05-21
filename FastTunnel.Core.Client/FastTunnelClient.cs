@@ -39,11 +39,10 @@ public class FastTunnelClient : IFastTunnelClient
 
     protected readonly ILogger<FastTunnelClient> _logger;
     protected DefaultClientConfig ClientConfig { get; private set; }
+    public SuiDaoServer Server { get ; set ; }
 
     private readonly SwapHandler swapHandler;
     private readonly LogHandler logHandler;
-
-    public SuiDaoServer Server { get; protected set; }
 
     public FastTunnelClient(
         ILogger<FastTunnelClient> logger,

@@ -6,11 +6,14 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using FastTunnel.Core.Config;
 
 namespace FastTunnel.Core.Client
 {
     public interface IFastTunnelClient
     {
+        public SuiDaoServer Server { get; set; }
+
         Task StartAsync(CancellationToken cancellationToken);
 
         Task StopAsync(CancellationToken cancellationToken);

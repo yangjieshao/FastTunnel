@@ -108,7 +108,7 @@ namespace FastTunnel.Api.Helper
             else
             {
                 deletePorts.Sort();
-                Logger.LogInformation("可用端口池范围：{min}~{max} 其中[{deletePorts}]不可用", AllCanPort[0], AllCanPort[^1], string.Join(',', deletePorts));
+                Logger.LogInformation("可用端口池范围：{min}~{max} 其中 [{deletePorts}] 不可用", AllCanPort[0], AllCanPort[^1], string.Join(',', deletePorts));
             }
         }
 

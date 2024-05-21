@@ -25,16 +25,17 @@ namespace FastTunnel.Core.Handlers.Client
             _logger = logger;
         }
 
-        public async Task HandlerMsgAsync(FastTunnelClient cleint, string msg, CancellationToken cancellationToken)
+        public async Task HandlerMsgAsync(IFastTunnelClient cleint, string msg, CancellationToken cancellationToken)
         {
             var msgs = msg.Split('|');
             var requestId = msgs[0];
-            var address = msgs[1];
+
+            var address = msgs[1].Split(']')[^1];
 
             await swap(cleint, requestId, address, cancellationToken);
         }
 
-        private async Task swap(FastTunnelClient cleint, string requestId, string address, CancellationToken cancellationToken)
+        private async Task swap(IFastTunnelClient cleint, string requestId, string address, CancellationToken cancellationToken)
         {
             try
             {
@@ -67,7 +68,7 @@ namespace FastTunnel.Core.Handlers.Client
             return new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 };
         }
 
-        private async Task<Stream> createRemote(string requestId, FastTunnelClient cleint, CancellationToken cancellationToken)
+        private async Task<Stream> createRemote(string requestId, IFastTunnelClient cleint, CancellationToken cancellationToken)
         {
             var socket = await DnsSocketFactory.ConnectAsync(cleint.Server.ServerAddr, cleint.Server.ServerPort, cancellationToken);
             Stream serverStream = new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 };
