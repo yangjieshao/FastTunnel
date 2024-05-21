@@ -22,16 +22,12 @@ using Microsoft.Extensions.Options;
 
 namespace FastTunnel.Core.Client;
 
-#if NET6_0_OR_GREATER
-
 [JsonSourceGenerationOptions(WriteIndented = false)]
 [JsonSerializable(typeof(LogInMassage))]
 [JsonSerializable(typeof(Message<TunnelMassage>))]
 public partial class SourceGenerationContext : JsonSerializerContext
 {
 }
-
-#endif
 
 public class FastTunnelClient : IFastTunnelClient
 {
