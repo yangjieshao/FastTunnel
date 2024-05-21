@@ -20,15 +20,17 @@ namespace FastTunnel.Api.Controllers;
 public class SystemController : ControllerBase
 {
     private readonly FastTunnelServer fastTunnelServer;
-    private readonly IOptionsMonitor<DefaultServerConfig> serverOptionsMonitor;
 
     private readonly ILogger<SystemController> _logger;
 
-    public SystemController(FastTunnelServer fastTunnelServer, ILogger<SystemController> logger, IOptionsMonitor<DefaultServerConfig> optionsMonitor)
+    private CacheHelper CacheHelper { get; }
+
+    public SystemController(FastTunnelServer fastTunnelServer, CacheHelper cacheHelper
+        , ILogger<SystemController> logger)
     {
         this.fastTunnelServer = fastTunnelServer;
         _logger = logger;
-        serverOptionsMonitor = optionsMonitor;
+        CacheHelper = cacheHelper;
     }
 
     /// <summary>
@@ -48,7 +50,7 @@ public class SystemController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public ApiResponse<WebListInfo> GetAllWebList()
+    public ApiResponse<WebListInfo4Result> GetAllWebList()
     {
         return new()
         {
@@ -71,7 +73,7 @@ public class SystemController : ControllerBase
     /// 获取所有端口转发映射列表
     /// </summary>
     [HttpGet]
-    public ApiResponse<ForwardListInfo> GetAllForwardList()
+    public ApiResponse<ForwardListInfo4Result> GetAllForwardList()
     {
         return new ()
         {
@@ -87,7 +89,7 @@ public class SystemController : ControllerBase
     {
         return new()
         {
-            data = fastTunnelServer.ForwardList.Select(x => x.Key)
+            data = fastTunnelServer.GetAllUsedPort()
         };
     }
 
@@ -105,11 +107,44 @@ public class SystemController : ControllerBase
     }
 
     [HttpGet]
-    public ApiResponse<IEnumerable<ClientInfo>> Clients()
+    public ApiResponse<IEnumerable<ClientInfo4Result>> Clients()
     {
         return new()
         {
             data = fastTunnelServer.GetClients()
         };
+    }
+
+    [HttpGet]
+    public async Task<ApiResponse<int>> GetPort(string token)
+    {
+        if(string.IsNullOrWhiteSpace(token))
+        {
+            return new ApiResponse<int> { data = -1, code = ErrorCodeEnum.Exception,message= "token 不能未空" };
+        }
+        var port = await CacheHelper.GetPort(token);
+        if (port <= 0)
+        {
+            port = await CacheHelper.CreatePort();
+            if(port>=0)
+            {
+                await CacheHelper.SetTempPort(token, port);
+            }
+        }
+
+        return new ApiResponse<int>()
+        {
+            data = port
+        };
+    }
+
+    /// <summary>
+    /// 清理g过期缓存
+    /// </summary>
+    [HttpGet]
+    public async Task<ApiResponse> CleanCache()
+    {
+        await CacheHelper.CleanInvalidateCache();
+        return new();
     }
 }

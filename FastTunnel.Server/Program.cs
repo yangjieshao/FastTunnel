@@ -27,6 +27,7 @@ public class Program
 
             // Add services to the container.
             builder.Services.AddSingleton<CustomExceptionFilterAttribute>()
+                            .AddSingleton<CacheHelper>()
                             .UseAkavache()
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                             .AddEndpointsApiExplorer()
@@ -90,6 +91,6 @@ public class Program
             Task.Delay(200).Wait();
             throw;
         }
-        CacheHelper.StopAkavache();
+        CacheHelperEx.StopAkavache();
     }
 }

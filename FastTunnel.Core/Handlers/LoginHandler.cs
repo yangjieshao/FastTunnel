@@ -98,7 +98,7 @@ public class LoginHandler : ILoginHandler
 
                         if (server.TryGetValueForward(item.RemotePort, out var old))
                         {
-                            logger.LogDebug("Remove Listener {ListenIp}:{ListenPort}", old.Listener.ListenIp, old.Listener.ListenPort);
+                            logger.LogDebug("Remove Listener [{Name}] {ListenIp}:{ListenPort}", item.Name,  old.Listener.ListenIp, old.Listener.ListenPort);
                             old.Listener.Stop();
                             server.RemoveForward(item.RemotePort);
                         }
@@ -111,14 +111,14 @@ public class LoginHandler : ILoginHandler
 
                         // TODO: 客户端离线时销毁
                         server.AddForward(item.RemotePort, forwardInfo);
-                        logger.LogDebug("SSH proxy success: {RemotePort} => {LocalIp}:{LocalPort}", item.RemotePort, item.LocalIp, item.LocalPort);
+                        logger.LogDebug("SSH proxy success: [{Name}] {RemotePort} => {LocalIp}:{LocalPort}", item.Name, item.RemotePort, item.LocalIp, item.LocalPort);
 
                         client.AddForward(forwardInfo);
-                        await client.webSocket.SendCmdAsync(MessageType.Log, $"  {item.Protocol}    | {server.ServerOption.CurrentValue.WebDomain}:{item.RemotePort} => {item.LocalIp}:{item.LocalPort}", CancellationToken.None);
+                        await client.webSocket.SendCmdAsync(MessageType.Log, $"  {item.Protocol}    | [{item.Name}] {server.ServerOption.CurrentValue.WebDomain}:{item.RemotePort} => {item.LocalIp}:{item.LocalPort}", CancellationToken.None);
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex, "SSH proxy error: {RemotePort} => {LocalIp}:{LocalPort}", item.RemotePort, item.LocalIp, item.LocalPort);
+                        logger.LogError(ex, "SSH proxy error: [{Name}] {RemotePort} => {LocalIp}:{LocalPort}", item.Name, item.RemotePort, item.LocalIp, item.LocalPort);
                         await client.webSocket.SendCmdAsync(MessageType.Log, ex.Message, CancellationToken.None);
                         continue;
                     }

@@ -4,11 +4,7 @@
 //     https://github.com/FastTunnel/FastTunnel/edit/v2/LICENSE
 // Copyright (c) 2019 Gui.H
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FastTunnel.Core.Models;
 
@@ -18,12 +14,12 @@ public class ResponseTempListInfo
     public IEnumerable<string> Rows { set; get; }
 }
 
-public class WebListInfo
+public class WebListInfo4Result
 {
     public int Count { set; get; }
-    public IEnumerable<WebInfo> Rows { set; get; }
+    public IEnumerable<WebInfo4Result> Rows { set; get; }
 
-    public class WebInfo
+    public class WebInfo4Result
     {
         public string Key { set; get; }
         public string LocalIp { set; get; }
@@ -31,21 +27,24 @@ public class WebListInfo
     }
 }
 
-public class ForwardListInfo
+public class ForwardListInfo4Result
 {
     public int Count { set; get; }
-    public IEnumerable<ForwardInfo> Rows { set; get; }
+    public IEnumerable<ForwardInfo4Result> Rows { set; get; }
 
-    public class ForwardInfo
+    public class ForwardInfo4Result
     {
         public int Key { set; get; }
+        /// <summary>
+        /// </summary>
+        public string Name { get; set; }
         public string LocalIp { set; get; }
         public int LocalPort { set; get; }
         public int RemotePort { set; get; }
     }
 }
 
-public class ClientInfo
+public class ClientInfo4Result
 {
     public IList<WebInfo> WebInfos { set; get; }
     public IList<ForwardInfo<ForwardHandlerArg>> ForwardInfos { set; get; }

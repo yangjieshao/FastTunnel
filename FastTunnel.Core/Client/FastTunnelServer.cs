@@ -18,7 +18,7 @@ using FastTunnel.Core.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Yarp.ReverseProxy.Configuration;
-using static FastTunnel.Core.Models.ForwardListInfo;
+using static FastTunnel.Core.Models.ForwardListInfo4Result;
 
 namespace FastTunnel.Core.Client
 {
@@ -29,15 +29,14 @@ namespace FastTunnel.Core.Client
         public IProxyConfigProvider proxyConfig;
         private readonly ILogger<FastTunnelServer> logger;
 
-        public event EventHandler<int> ForwardRemoved;
-        public event EventHandler<int> ForwardAdded;
+        public event EventHandler<(string Name,int port)> ForwardRemoved;
+        public event EventHandler<(string Name, int port)> ForwardAdded;
 
         public ConcurrentDictionary<string, (TaskCompletionSource<Stream>, CancellationToken)> ResponseTasks { get; } = new();
 
         public ConcurrentDictionary<string, WebInfo> WebList { get; private set; } = new();
 
-        public ConcurrentDictionary<int, ForwardInfo<ForwardHandlerArg>> ForwardList { get; private set; }
-            = new ConcurrentDictionary<int, ForwardInfo<ForwardHandlerArg>>();
+        private ConcurrentDictionary<int, ForwardInfo<ForwardHandlerArg>> ForwardList { get; set; }= new ();
 
         /// <summary>
         /// 在线客户端列表
@@ -58,7 +57,7 @@ namespace FastTunnel.Core.Client
         internal void ClientLogin(TunnelClient client)
         {
             Interlocked.Increment(ref ConnectedClientCount);
-            logger.LogInformation("客户端连接 {RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计CLIENT连接数：{ConnectionCount}"
+            logger.LogInformation("客户端连接 {RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计Client连接数：{ConnectionCount}"
                 , client.RemoteIpAddress, ConnectedClientCount, FastTunnelClientHandler.ConnectionCount);
             Clients.Add(client);
         }
@@ -71,7 +70,7 @@ namespace FastTunnel.Core.Client
         internal void ClientLogout(TunnelClient client)
         {
             Interlocked.Decrement(ref ConnectedClientCount);
-            logger.LogInformation("客户端关闭  {RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计CLIENT连接数：{ConnectionCount }"
+            logger.LogInformation("客户端关闭  {RemoteIpAddress} 当前在线数：{ConnectedClientCount}，统计Client连接数：{ConnectionCount}"
                 , client.RemoteIpAddress, ConnectedClientCount, FastTunnelClientHandler.ConnectionCount - 1);
             Clients.Remove(client);
             client.Logout();
@@ -84,9 +83,9 @@ namespace FastTunnel.Core.Client
 
         public void RemoveForward(int remotePort)
         {
-            if(ForwardList.TryRemove(remotePort, out var _))
+            if(ForwardList.TryRemove(remotePort, out var val))
             {
-                ForwardRemoved?.Invoke(this, remotePort);
+                ForwardRemoved?.Invoke(this, (val?.SSHConfig?.Name, remotePort));
             }
         }
 
@@ -94,7 +93,7 @@ namespace FastTunnel.Core.Client
         {
             if(ForwardList.TryAdd(remotePort, forward))
             {
-                ForwardAdded?.Invoke(this, remotePort);
+                ForwardAdded?.Invoke(this, (forward?.SSHConfig?.Name, remotePort));
             }
         }
 
@@ -112,10 +111,10 @@ namespace FastTunnel.Core.Client
             };
         }
 
-        public IEnumerable<ClientInfo> GetClients()
+        public IEnumerable<ClientInfo4Result> GetClients()
         {
 #pragma warning disable CA1305 // 指定 IFormatProvider
-            return Clients.Select(x => new ClientInfo
+            return Clients.Select(x => new ClientInfo4Result
             {
                  WebInfos = x.WebInfos,
                  ForwardInfos = x.ForwardInfos,
@@ -125,33 +124,39 @@ namespace FastTunnel.Core.Client
 #pragma warning restore CA1305 // 指定 IFormatProvider
         }
 
-        public WebListInfo GetAllWebList()
+        public WebListInfo4Result GetAllWebList()
         {
             return new()
             {
                  Count= WebList.Count,
-                  Rows = WebList.Select(x=>new WebListInfo.WebInfo
-                  {
-                       Key = x.Key,
-                       LocalIp= x.Value.WebConfig.LocalIp,
-                       LocalPort = x.Value.WebConfig.LocalPort
-                  })
+                 Rows = WebList.Select(x=>new WebListInfo4Result.WebInfo4Result
+                 {
+                      Key = x.Key,
+                      LocalIp= x.Value.WebConfig.LocalIp,
+                      LocalPort = x.Value.WebConfig.LocalPort
+                 })
             };
         }
 
-        public ForwardListInfo GetAllForwardList()
+        public ForwardListInfo4Result GetAllForwardList()
         {
             return new()
             {
                  Count = ForwardList.Count,
-                  Rows = ForwardList.Select(x=>new ForwardListInfo.ForwardInfo
+                  Rows = ForwardList.Select(x=>new ForwardListInfo4Result.ForwardInfo4Result
                   {
                       Key = x.Key,
+                      Name = x.Value.SSHConfig.Name,
                       LocalIp = x.Value.SSHConfig.LocalIp,
                       LocalPort = x.Value.SSHConfig.LocalPort,
                       RemotePort = x.Value.SSHConfig.RemotePort,
                   })
             };
+        }
+
+        public IEnumerable<int> GetAllUsedPort()
+        {
+            return ForwardList.Select(x => x.Key);
         }
     }
 }

@@ -45,8 +45,8 @@ namespace FastTunnel.Core.Handlers
             try
             {
                 await Task.Yield();
-                logger.LogDebug("[Forward]Swap开始 {msgId}|{RemotePort}=>{LocalIp}:{LocalPort}"
-                    , msgId, _config.RemotePort, _config.LocalIp, _config.LocalPort);
+                logger.LogDebug("[Forward]Swap开始 {msgId}| [{Name}] {RemotePort}=>{LocalIp}:{LocalPort}"
+                    , msgId, _config.Name, _config.RemotePort, _config.LocalIp, _config.LocalPort);
 
                 var tcs = new TaskCompletionSource<Stream>();
 
@@ -54,7 +54,7 @@ namespace FastTunnel.Core.Handlers
 
                 try
                 {
-                    await client.SendCmdAsync(MessageType.Forward, $"{msgId}|{_config.LocalIp}:{_config.LocalPort}", CancellationToken.None);
+                    await client.SendCmdAsync(MessageType.Forward, $"{msgId}|[{_config.Name}]{_config.LocalIp}:{_config.LocalPort}", CancellationToken.None);
                 }
                 catch (SocketClosedException sex)
                 {

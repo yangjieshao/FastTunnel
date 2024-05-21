@@ -9,6 +9,10 @@ namespace FastTunnel.Core.Models
     public class ForwardConfig
     {
         /// <summary>
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// 局域网IP地址
         /// </summary>
         public string LocalIp { get; set; }

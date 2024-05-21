@@ -110,20 +110,12 @@ public class FastTunnelClient : IFastTunnelClient
     {
         Server = ClientConfig.Server;
 
-# if NET8_0_OR_GREATER
         return new LogInMassage
         {
             Webs = ClientConfig.Webs,
             Forwards = ClientConfig.Forwards,
         }.ToJson(jsonTypeInfo: SourceGenerationContext.Default.LogInMassage);
 
-#else
-        return new LogInMassage
-        {
-            Webs = ClientConfig.Webs,
-            Forwards = ClientConfig.Forwards,
-        }.ToJson();
-#endif
     }
 
     protected async Task ReceiveServerAsync(CancellationToken cancellationToken)
